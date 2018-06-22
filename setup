@@ -1,0 +1,85 @@
+#!/bin/bash
+# ex: set shiftwidth=4 tabstop=4 expandtab:
+
+set -o errexit
+
+has_ppa()
+{
+    grep --quiet --recursive "$1" /etc/apt/sources.list.d/
+}
+
+# gpg has trouble working around the proxy on its own since 16.10.
+# Call apt-key manually to work around it.
+fix_gpg_key()
+{
+    sudo apt-key adv \
+        --keyserver-options http-proxy=http://prx.dsg.dk:8080/ \
+        --keyserver keyserver.ubuntu.com \
+        --recv-keys "$1"
+}
+
+if has_ppa git-core
+then
+    printf 'PPA for Git core already installed, skipping...\n'
+else
+    printf 'Installing PPA for Git core...\n'
+    sudo add-apt-repository --yes ppa:git-core/ppa ||
+    fix_gpg_key 'A1715D88E1DF1F24'
+fi
+
+if has_ppa 'webupd8team/java'
+then
+    printf 'PPA for Oracle Java already installed, skipping...\n'
+else
+    printf 'Installing PPA for Oracle Java...\n'
+    sudo add-apt-repository --yes ppa:webupd8team/java ||
+    fix_gpg_key 'C2518248EEA14886'
+fi
+
+printf 'Installing packages...\n'
+sudo apt update
+sudo apt upgrade
+sudo apt install \
+    git \
+    meld \
+    ntp \
+    oracle-java8-installer \
+    tig \
+
+
+if [[ -r "$HOME/.ssh/config" ]]
+    printf 'Detected %s, please ensure validity.\n' "$HOME/.ssh/config"
+then
+    printf 'Setting default SSH config...\n'
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    cp sshconfig "$HOME/.ssh/config"
+fi
+
+if ! [[ -r "$HOME/.config/systemd/user/ssh-agent.service" ]]
+then
+    printf 'Configuring on-boot ssh-agent...\n'
+    mkdir -p "$HOME/.config/systemd/user"
+    cp ssh-agent.service "$HOME/.config/systemd/user/"
+
+    profile="$HOME/.profile"
+    [[ ! -r "$HOME/.bash_profile" ]] || profile="$HOME/.bash_profile"
+
+    tee --append "$profile" <<'EOT'
+SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+export SSH_AUTH_SOCK
+EOT
+
+    systemctl --user daemon-reload
+    systemctl --user enable ssh-agent
+    systemctl --user start ssh-agent
+fi
+
+if [[ -r "$HOME/.ssh/id-bitbucket" ]]
+then
+    printf 'Found Bitbucket SSH key, skipping...\n'
+else
+    printf 'Generating new SSH key for Bitbucket.\n'
+    printf 'Please launch keepassx to generate a passphrase.\n'
+    ssh-keygen -t ed25519 -o -a 100 -f "$HOME/.ssh/id-bitbucket"
+fi
