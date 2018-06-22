@@ -1,0 +1,21 @@
+# ex: se noet sw=8 ts=8:
+Host bitbucket.org
+	IdentityFile ~/.ssh/id-bitbucket
+
+Host github.com
+	IdentityFile ~/.ssh/id-github	
+
+Host *
+	Protocol 2
+	
+	IdentitiesOnly yes
+	
+	ForwardAgent no
+	
+	ForwardX11 no
+	ForwardX11Trusted no
+	
+	ServerAliveInterval 60
+	ServerAliveCountMax 5
+	
+	AddKeysToAgent yes
