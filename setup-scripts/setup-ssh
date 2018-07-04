@@ -1,0 +1,53 @@
+#!/bin/bash
+# ex: set shiftwidth=4 tabstop=4 expandtab:
+
+printf '#######################################\n'
+printf 'Setting up SSH \n'
+printf '#######################################\n'
+
+if [[ -r "$HOME/.ssh/config" ]]
+then
+    printf 'Detected %s, please ensure validity.\n' "$HOME/.ssh/config"
+else
+    printf 'Setting default SSH config...\n'
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    cp setup-files/sshconfig "$HOME/.ssh/config"
+fi
+
+if ! [[ -r "$HOME/.config/systemd/user/ssh-agent.service" ]]
+then
+    printf 'Configuring on-boot ssh-agent...\n'
+    mkdir -p "$HOME/.config/systemd/user"
+    cp setup-files/ssh-agent.service "$HOME/.config/systemd/user/"
+
+    profile="$HOME/.profile"
+    [[ ! -r "$HOME/.bash_profile" ]] || profile="$HOME/.bash_profile"
+
+    tee --append "$profile" <<'EOT'
+SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+export SSH_AUTH_SOCK
+EOT
+
+    systemctl --user daemon-reload
+    systemctl --user enable ssh-agent
+    systemctl --user start ssh-agent
+fi
+
+if [[ -r "$HOME/.ssh/id-bitbucket" ]]
+then
+    printf 'Found Bitbucket SSH key, skipping...\n'
+else
+    printf 'Generating new SSH key for Bitbucket.\n'
+    printf 'Please launch keepassx to generate a passphrase.\n'
+    ssh-keygen -t ed25519 -o -a 100 -f "$HOME/.ssh/id-bitbucket"
+fi
+
+if [[ -r "$HOME/.ssh/id-github" ]]
+then
+    printf 'Found Github SSH key, skipping...\n'
+else
+    printf 'Generating new SSH key for Github.\n'
+    printf 'Please launch keepassx to generate a passphrase.\n'
+    ssh-keygen -t ed25519 -o -a 100 -f "$HOME/.ssh/id-github"
+fi

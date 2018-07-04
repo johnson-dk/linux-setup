@@ -1,0 +1,52 @@
+#!/bin/bash
+# ex: set shiftwidth=4 tabstop=4 expandtab:
+
+printf '#######################################\n'
+printf 'Setting up PPA \n'
+printf '#######################################\n'
+
+has_ppa()
+{
+    grep --quiet --recursive "$1" /etc/apt/sources.list.d/
+}
+
+if has_ppa git-core
+then
+    printf 'PPA for Git core already installed, skipping...\n'
+else
+    printf 'Installing PPA for Git core...\n'
+    sudo add-apt-repository --yes ppa:git-core/ppa
+fi
+
+if has_ppa 'webupd8team/java'
+then
+    printf 'PPA for Oracle Java already installed, skipping...\n'
+else
+    printf 'Installing PPA for Oracle Java...\n'
+    sudo add-apt-repository --yes ppa:webupd8team/java
+fi
+
+if has_ppa ubuntu-make
+then
+    printf 'PPA for Ubuntu Make already installed, skipping...\n'
+else
+    printf 'Installing PPA for Ubuntu Make...\n'
+    sudo add-apt-repository ppa:lyzardking/ubuntu-make
+fi
+
+printf '#######################################\n'
+printf 'Installing packages...\n'
+printf '#######################################\n'
+sudo apt update
+sudo apt upgrade
+sudo apt install \
+    git \
+    meld \
+    ntp \
+    oracle-java8-installer \
+    tig \
+    neovim \
+    curl \
+    ubuntu-make \
+    xclip \
+    

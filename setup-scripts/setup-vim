@@ -1,0 +1,56 @@
+#!/bin/bash
+# ex: set shiftwidth=4 tabstop=4 expandtab:
+
+printf '#######################################\n'
+printf 'Setting up VIM \n'
+printf '#######################################\n'
+
+if [[ -r "$HOME/.vim/bundle" ]]
+then
+    printf 'Pathogen.vim installed, skipping...\n'
+else
+    printf 'Installing pathogen.vim.\n'
+    mkdir -p $HOME/.vim/autoload ~/.vim/bundle && \
+    curl -LSso $HOME/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+fi
+
+if [[ -r "$HOME/.vim/bundle/vim-sensible" ]]
+then
+    printf 'Sensible.vim installed, skipping...\n'
+else
+    printf 'Installing sensible.vim.\n'
+    cd $HOME/.vim/bundle
+    git clone git://github.com/tpope/vim-sensible.git
+fi
+
+if [[ -r "$HOME/.vim/bundle/vim-fugitive" ]]
+then
+    printf 'Fugitive.vim installed, skipping...\n'
+else
+    printf 'Installing Fugitive.vim.\n'
+    cd $HOME/.vim/bundle
+    git clone https://github.com/tpope/vim-fugitive.git
+    vim -u NONE -c "helptags vim-fugitive/doc" -c q
+fi
+
+printf 'Configuring vim spell check language..\n'
+if [[ -r "$HOME/.config/nvim/spell" ]]
+then
+    printf 'Spell check language already exists, skipping...\n'
+else
+    printf 'Adding spell check language.\n'
+    mkdir -p $HOME/.config/nvim/spell
+    for f in utf-8 ascii; do wget --directory-prefix=$HOME/.config/nvim/spell/ http://ftp.vim.org/vim/runtime/spell/en.$f.spl; done
+fi
+
+vimrc="$HOME/.config/nvim/init.vim"
+if grep -Fxq "set spell spelllang=en_gb" $vimrc
+then
+    printf 'Vim already configured.\n'
+else
+    printf 'Configuring vim.\n'
+    tee --append $vimrc <<'EOT'
+set spell spelllang=en_gb
+EOT
+
+fi

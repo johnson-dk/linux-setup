@@ -1,2 +1,2 @@
 # linux-setup
-Settuing up my machine gets old
+Setting up my linux machine after a clean install.
