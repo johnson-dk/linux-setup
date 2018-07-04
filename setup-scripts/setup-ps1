@@ -1,0 +1,14 @@
+#!/bin/bash
+# ex: set shiftwidth=4 tabstop=4 expandtab:
+
+printf '#######################################\n'
+printf 'Setting up PS1 \n'
+printf '#######################################\n'
+
+if [[ -r "$HOME/.bash_aliases" ]]
+then
+    printf 'Detected bash_aliases, PS1 should be configured.\n'
+else
+    printf 'Adding .bash_aliases with PS1.\n'
+    cp setup-files/ps1.txt "$HOME/.bash_aliases"
+fi

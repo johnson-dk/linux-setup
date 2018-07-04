@@ -1,0 +1,12 @@
+#!/bin/bash
+# ex: set shiftwidth=4 tabstop=4 expandtab:
+
+printf '#######################################\n'
+printf 'Configuring git config.\n'
+printf '#######################################\n'
+
+git config --global user.name "Brian Duncan Johnson"
+git config --global user.email brian.duncan.johnson@sallinggroup.com
+git config --global merge.tool meld
+git config -l
+
